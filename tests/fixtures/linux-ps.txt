@@ -1,0 +1,8 @@
+    1  0.0  3328 root                             bash
+    8  0.1 27336 postgres                         postgres
+   72  0.0  6224 postgres                         postgres: checkpointer 
+   73  0.0  6640 postgres                         postgres: background writer 
+   75  0.0 10512 postgres                         postgres: walwriter 
+   76  0.0  9120 postgres                         postgres: autovacuum launcher 
+   77  0.0  8476 postgres                         postgres: logical replication launcher 
+  342  0.0  3652 root                             ps -eo pid=,pcpu=,rss=,user:32=,args=

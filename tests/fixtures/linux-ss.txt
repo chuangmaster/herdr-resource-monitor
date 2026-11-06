@@ -1,0 +1,2 @@
+tcp LISTEN 0      200    0.0.0.0:5432 0.0.0.0:* users:(("postgres",pid=8,fd=6))
+tcp LISTEN 0      200       [::]:5432    [::]:* users:(("postgres",pid=8,fd=7))

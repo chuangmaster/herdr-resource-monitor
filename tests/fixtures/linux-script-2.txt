@@ -1,0 +1,81 @@
+100
+@@RM@@
+1 (bash) S 0 1 1 0 -1 4194560 1446 113487 0 1 1 1 351 82 20 0 1 0 42191846 7090176 845 18446744073709551615 187649991835648 187649993150256 281474737204896 0 0 0 65536 4 65538 1 0 0 17 6 0 0 0 0 0 187649993259760 187649993311164 187650995273728 281474737208337 281474737208614 281474737208614 281474737209322 0
+342 (yes) R 1 1 1 0 -1 4194560 142 0 1 0 88 214 0 0 20 0 1 0 42194006 5423104 407 18446744073709551615 187650689269760 187650689304336 281474246147280 0 0 0 0 6 0 0 0 0 17 2 0 0 0 0 0 187650689399536 187650689401064 187651712069632 281474246151444 281474246151448 281474246151448 281474246152171 0
+353 (sh) S 1 1 1 0 -1 4194560 125 62 0 0 0 0 0 0 20 0 1 0 42194308 2465792 326 18446744073709551615 187650195783680 187650195910892 281473964228944 0 0 0 0 0 65538 1 0 0 17 7 0 0 0 0 0 187650195975008 187650195980816 187650897534976 281473964231516 281473964231962 281473964231962 281473964232684 0
+66 (postgres) S 8 66 66 0 -1 4194368 219 0 0 0 0 0 0 0 20 0 1 0 42191926 223109120 1504 18446744073709551615 187650734292992 187650743726512 281474634945648 0 0 0 4194304 19951616 536873479 1 0 0 17 9 0 0 0 0 0 187650743786712 187650744024442 187651798351872 281474634947853 281474634947862 281474634947862 281474634948564 0
+67 (postgres) S 8 67 67 0 -1 4194368 281 0 0 0 0 0 0 0 20 0 1 0 42191926 223133696 1652 18446744073709551615 187650734292992 187650743726512 281474634945648 0 0 0 4194304 19937282 536887813 1 0 0 17 6 0 0 0 0 0 187650743786712 187650744024442 187651798351872 281474634947853 281474634947862 281474634947862 281474634948564 0
+69 (postgres) S 8 69 69 0 -1 4194368 1243 0 0 0 0 0 0 0 20 0 1 0 42191926 222973952 2592 18446744073709551615 187650734292992 187650743726512 281474634945648 0 0 0 4194304 19937280 536887815 1 0 0 17 5 0 0 0 0 0 187650743786712 187650744024442 187651798351872 281474634947853 281474634947862 281474634947862 281474634948564 0
+70 (postgres) S 8 70 70 0 -1 4194368 382 0 0 0 0 0 0 0 20 0 1 0 42191926 224608256 2273 18446744073709551615 187650734292992 187650743726512 281474634945648 0 0 0 4194304 19927040 536898183 1 0 0 17 4 0 0 0 0 0 187650743786712 187650744024442 187651798351872 281474634947853 281474634947862 281474634947862 281474634948564 0
+71 (postgres) S 8 71 71 0 -1 4194368 343 0 0 0 0 0 0 0 20 0 1 0 42191926 224591872 2063 18446744073709551615 187650734292992 187650743726512 281474634945648 0 0 0 4194304 19929088 536896135 1 0 0 17 0 0 0 0 0 0 187650743786712 187650744024442 187651798351872 281474634947853 281474634947862 281474634947862 281474634948564 0
+8 (postgres) S 1 1 1 0 -1 4194560 5288 27425 0 0 0 2 28 15 20 0 1 0 42191851 222973952 6777 18446744073709551615 187650734292992 187650743726512 281474634945648 0 0 0 4194304 19935232 84487 1 0 0 17 6 0 0 0 0 0 187650743786712 187650744024442 187651798351872 281474634947853 281474634947862 281474634947862 281474634948564 0
+@@RM@@
+    1  0.0  3392 root                             bash -c  (docker-entrypoint.sh postgres >/dev/null 2>&1 &); apt-get update -qq >/dev/null 2>&1 && apt-get install -y -qq iproute2 >/dev/null 2>&1; sleep 3; (yes >/dev/null &); sleep 1; sh -c "$S" > /tmp/a; sleep 2; sh -c "$S" > /tmp/b; cat /tmp/a; echo "@@SPLIT@@"; cat /tmp/b
+    8  0.0 27336 postgres                         postgres
+   66  0.0  6232 postgres                         postgres: checkpointer 
+   67  0.0  6652 postgres                         postgres: background writer 
+   69  0.0 10520 postgres                         postgres: walwriter 
+   70  0.0  9124 postgres                         postgres: autovacuum launcher 
+   71  0.0  8484 postgres                         postgres: logical replication launcher 
+  342 99.3  1740 root                             yes
+  353  0.0  1544 root                             sh -c getconf CLK_TCK; echo @@RM@@; cat /proc/[0-9]*/stat 2>/dev/null; echo @@RM@@; ps -eo pid=,pcpu=,rss=,user:32=,args=; echo @@RM@@; cat /proc/meminfo; echo @@RM@@; cat /proc/loadavg; echo @@RM@@; nproc 2>/dev/null || getconf _NPROCESSORS_ONLN; echo @@RM@@; if command -v ss >/dev/null 2>&1; then echo ss; ss -H -tulnp 2>/dev/null; elif command -v lsof >/dev/null 2>&1; then echo lsof; lsof -nP -iTCP -sTCP:LISTEN -iUDP -F pPn 2>/dev/null; fi
+  356  0.0  3652 root                             ps -eo pid=,pcpu=,rss=,user:32=,args=
+@@RM@@
+MemTotal:        8126480 kB
+MemFree:         6539632 kB
+MemAvailable:    7168864 kB
+Buffers:           82832 kB
+Cached:           682764 kB
+SwapCached:            0 kB
+Active:           865588 kB
+Inactive:         323528 kB
+Active(anon):     436124 kB
+Inactive(anon):        0 kB
+Active(file):     429464 kB
+Inactive(file):   323528 kB
+Unevictable:           0 kB
+Mlocked:               0 kB
+SwapTotal:       1048572 kB
+SwapFree:        1048572 kB
+Zswap:                 0 kB
+Zswapped:              0 kB
+Dirty:             29600 kB
+Writeback:             0 kB
+AnonPages:        407120 kB
+Mapped:           220212 kB
+Shmem:             12564 kB
+KReclaimable:      46336 kB
+Slab:             104928 kB
+SReclaimable:      46336 kB
+SUnreclaim:        58592 kB
+KernelStack:        5408 kB
+PageTables:         3944 kB
+SecPageTables:         0 kB
+NFS_Unstable:          0 kB
+Bounce:                0 kB
+WritebackTmp:          0 kB
+CommitLimit:     5111812 kB
+Committed_AS:    1358196 kB
+VmallocTotal:   135288315904 kB
+VmallocUsed:        5532 kB
+VmallocChunk:          0 kB
+Percpu:             3520 kB
+AnonHugePages:    301056 kB
+ShmemHugePages:        0 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+HugePages_Total:       0
+HugePages_Free:        0
+HugePages_Rsvd:        0
+HugePages_Surp:        0
+Hugepagesize:       2048 kB
+Hugetlb:               0 kB
+@@RM@@
+0.37 0.27 0.21 2/333 358
+@@RM@@
+10
+@@RM@@
+ss
+tcp LISTEN 0      200    0.0.0.0:5432 0.0.0.0:* users:(("postgres",pid=8,fd=6))
+tcp LISTEN 0      200       [::]:5432    [::]:* users:(("postgres",pid=8,fd=7))
