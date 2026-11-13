@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Terminate / Force kill on a process that already exited now says so
+  instead of showing an error, and always refreshes the list afterwards.
+- A refresh that takes longer than 8 s is abandoned with an error, so a hung
+  `ps` or `lsof` no longer freezes the list on stale rows.
+
 ## 0.1.0 — 2026-11-13
 
 First public release.
