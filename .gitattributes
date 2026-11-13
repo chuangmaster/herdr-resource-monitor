@@ -1,0 +1,3 @@
+# Fixtures are real command output from macOS/Linux; keep them LF on every
+# checkout (Windows would otherwise turn them into CRLF and break parsing).
+tests/fixtures/** text eol=lf
