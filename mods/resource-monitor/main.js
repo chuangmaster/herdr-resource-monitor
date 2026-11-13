@@ -46,6 +46,7 @@ const I18N = {
     cancel: "取消",
     sent: (sig) => (sig === "KILL" ? "已強制終止" : "已要求結束"),
     failed: (name) => `無法終止 ${name}`,
+    gone: "Process 已經結束",
     refreshFailed: (e) => `更新失敗：${e}`,
     settings: "設定",
     language: "語言",
@@ -83,6 +84,7 @@ const I18N = {
     cancel: "Cancel",
     sent: (sig) => (sig === "KILL" ? "Force killed" : "Asked to quit"),
     failed: (name) => `Couldn't terminate ${name}`,
+    gone: "Process already exited",
     refreshFailed: (e) => `Refresh failed: ${e}`,
     settings: "Settings",
     language: "Language",
@@ -116,6 +118,21 @@ function findNode(node, id) {
   return null;
 }
 
+// ps / lsof can occasionally hang; without a cap `busy` would stay true and
+// the list would freeze on stale rows.
+const COLLECT_TIMEOUT_MS = 8000;
+
+function withTimeout(cx, promise, ms) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = cx.timer.after(ms, () => reject(new Error(`timed out after ${ms / 1000}s`)));
+  });
+  return Promise.race([promise, timeout]).finally(() => timer?.cancel?.());
+}
+
+// kill / taskkill wording for "that PID doesn't exist".
+const GONE_RE = /no such process|not found|找不到/i;
+
 function fmtMem(mb) {
   return mb >= 1024 ? `${(mb / 1024).toFixed(1)} GB` : `${mb.toFixed(0)} MB`;
 }
@@ -131,6 +148,7 @@ export default class ResourceMonitor extends View {
     this.portsOnly = false;
     this.selected = null;
     this.busy = false;
+    this.gen = 0;
     this.error = "";
     this.updatedAt = null;
     this.lastRun = 0;
@@ -179,22 +197,29 @@ export default class ResourceMonitor extends View {
     return !panel.hidden && body.active === "processes";
   }
 
-  refresh(cx) {
-    if (this.busy) return;
+  // force: start a new run even if one is in flight; the older run's result
+  // is dropped when it lands (gen no longer matches).
+  refresh(cx, force = false) {
+    if (this.busy && !force) return;
+    const gen = ++this.gen;
     this.busy = true;
     this.lastRun = Date.now();
     cx.spawn(async (cx) => {
       try {
-        const { procs, sys } = await this.collect();
+        const { procs, sys } = await withTimeout(cx, this.collect(), COLLECT_TIMEOUT_MS);
+        if (gen !== this.gen) return;
         this.procs = procs;
         this.sys = sys;
         this.updatedAt = new Date();
         this.error = "";
       } catch (err) {
+        if (gen !== this.gen) return;
         this.error = String(err);
       } finally {
-        this.busy = false;
-        this.lastRun = Date.now();
+        if (gen === this.gen) {
+          this.busy = false;
+          this.lastRun = Date.now();
+        }
       }
       cx.notify();
     });
@@ -209,14 +234,19 @@ export default class ResourceMonitor extends View {
       } catch (err) {
         r = { code: -1, stderr: String(err) };
       }
+      const body = `${proc.name} (PID ${proc.pid})`;
       if (r.code === 0) {
-        notify({ title: tr.sent(signal), body: `${proc.name} (PID ${proc.pid})`, level: "success", timeout: 3000 });
+        notify({ title: tr.sent(signal), body, level: "success", timeout: 3000 });
+        this.selected = null;
+      } else if (GONE_RE.test(`${r.stderr ?? ""} ${r.stdout ?? ""}`)) {
+        // The row was stale: the process had already exited.
+        notify({ title: tr.gone, body, level: "info", timeout: 3000 });
         this.selected = null;
       } else {
         notify({ title: tr.failed(proc.name), body: (r.stderr || `exit ${r.code}`).trim(), level: "error" });
       }
       cx.notify();
-      this.refresh(cx);
+      this.refresh(cx, true);
     });
   }
 
